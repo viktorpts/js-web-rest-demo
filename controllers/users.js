@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { register } = require('../services/users');
+const { isGuest } = require('../middlewares/guards');
+const { register, login, logout } = require('../services/users');
 const mapErrors = require('../utils/mapper');
 
 
-router.post('/register', async (req, res) => {
+router.post('/register', isGuest(), async (req, res) => {
     try {
         if (req.body.password.trim() == '' || req.body.email.trim() == '') {
             throw new Error('Email and password are required');
@@ -18,15 +19,20 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/login', (req, res) => {
-    console.log(req.body);
-    console.log('login');
-    res.end();
+router.post('/login', isGuest(), async (req, res) => {
+    try {
+        const result = await login(req.body.email.trim().toLowerCase(), req.body.password.trim());
+        res.json(result);
+    } catch (err) {
+        console.error(err.message);
+        const error = mapErrors(err);
+        res.status(400).json({ message: error });
+    }
 });
 
 router.get('/logout', (req, res) => {
-    console.log('logout');
-    res.end();
+    logout(req.user?.token);
+    res.status(204).end();
 });
 
 module.exports = router;

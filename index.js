@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('./middlewares/cors');
 const catalogController = require('./controllers/catalog');
 const usersController = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 
 start();
@@ -23,6 +24,7 @@ async function start() {
     const app = express();
     app.use(express.json());
     app.use(cors());
+    app.use(auth());
     app.use('/data/catalog', catalogController);
     app.use('/users', usersController);
 
